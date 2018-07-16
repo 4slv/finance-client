@@ -19,11 +19,11 @@ interface TaskManagerInterface
     public function remove(TaskInterface $task): TaskManagerInterface;
 
     /** создание запроса */
-    public function createRequest();
+    public function createRequest(): TaskManagerInterface;
 
     /** отправка запроса, получение ответа */
-    public function sendRequest();
+    public function sendRequest(): TaskManagerInterface;
 
     /** действие после получения ответа */
-    public function afterRequest();
+    public function afterRequest(): TaskManagerInterface;
 }
