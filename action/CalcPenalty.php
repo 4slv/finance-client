@@ -4,16 +4,21 @@ namespace ApiClient\Action;
 
 class CalcPenalty extends ActionAbstract
 {
+    /** подготовка данных */
     public function prepare(): ActionAbstract
     {
-        // TODO: Implement prepare() method.
+        //
 
         return $this;
     }
 
-    public function process()
+    /** действия объединяются в пулл */
+    public function createPull(): ActionPull
     {
-        // TODO: Implement process() method.
-    }
+        $actionPull = new ActionPull();
 
+        //
+
+        return $actionPull;
+    }
 }

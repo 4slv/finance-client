@@ -25,5 +25,5 @@ abstract class ActionAbstract
     }
 
     abstract public function prepare(): ActionAbstract;
-    abstract public function process();
+    abstract public function createPull(): ActionPull;
 }
