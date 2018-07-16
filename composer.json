@@ -1,0 +1,16 @@
+{
+  "name": "api-client",
+  "description": "api-client for finance module",
+  "license": "MIT",
+  "minimum-stability": "stable",
+
+  "autoload": {
+    "psr-4": {
+      "ApiClient\\": ""
+    }
+  },
+  "require": {
+    "symfony/console": "^4.1",
+    "robmorgan/phinx": "0.9.2"
+  }
+}
