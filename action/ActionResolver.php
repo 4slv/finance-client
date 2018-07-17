@@ -6,9 +6,10 @@ final class ActionResolver
 {
     /**
      * @param string $actionName
+     * @param array $parameters
      * @return ActionAbstract|null
      */
-    public function resolve(string $actionName): ?ActionAbstract
+    public function resolve(string $actionName, array $parameters = []): ?ActionAbstract
     {
         $factoryAction = new ActionFactory();
 
@@ -16,6 +17,8 @@ final class ActionResolver
             case 'CalcPenalty': $action = $factoryAction->getCalcPenalty(); break;
             default: return null;
         }
+
+        $action->setParameters($parameters);
 
         return $action;
     }

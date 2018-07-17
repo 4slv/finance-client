@@ -8,6 +8,7 @@ use ApiClient\Task\TaskManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class InitCommand extends Command
@@ -15,23 +16,34 @@ class InitCommand extends Command
     protected function configure()
     {
         $this->setName('app:new-task')
-            ->addArgument('name', InputArgument::REQUIRED, 'Required name');
+            ->addArgument('name', InputArgument::REQUIRED, 'Required name')
+            ->addArgument('parameters', InputArgument::IS_ARRAY, 'Action parameters')
+            ->addOption(
+                'parameters',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Action parameters',
+                false
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $actionResolver = new ActionResolver();
         $actionName = $input->getArgument('name');
-        $action = $actionResolver->resolve($actionName);
+        $actionParameters = $input->getArgument('parameters');
+
+        $actionResolver = new ActionResolver();
+        $action = $actionResolver->resolve($actionName, $actionParameters);
         
         if(is_null($action)){
             $output->writeln(sprintf("Action '%s' not registered", $actionName));
+            die();
         }
         
-        $actionPull = $action->prepare()->createPull();
+        $actionPool = $action->prepare()->createPool();
 
         $task = new Task();
-        $task->setActionPull($actionPull);
+        $task->setActionPool($actionPool);
 
         $taskManager = new TaskManager();
         $taskManager->addTask($task);

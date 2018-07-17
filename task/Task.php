@@ -2,30 +2,28 @@
 
 namespace ApiClient\Task;
 
-use ApiClient\Action\ActionPull;
+use ApiClient\Process\ProcessPool;
 
 class Task
 {
-    /** @var ActionPull $actionPull */
-    private $actionPull;
+    /** @var ProcessPool $processPool */
+    private $processPool;
 
     /**
-     * @return ActionPull
+     * @return ProcessPool
      */
-    public function getActionPull(): ActionPull
+    public function getProcessPool(): ProcessPool
     {
-        return $this->actionPull;
+        return $this->processPool;
     }
 
     /**
-     * @param ActionPull $actionPull
+     * @param ProcessPool $processPool
      * @return Task
      */
-    public function setActionPull(ActionPull $actionPull): Task
+    public function setProcessPool(ProcessPool $processPool): Task
     {
-        $this->actionPull = $actionPull;
+        $this->processPool = $processPool;
         return $this;
     }
-
-
 }
