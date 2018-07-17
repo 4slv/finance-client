@@ -2,27 +2,25 @@
 
 namespace ApiClient\Action;
 
-use ApiClient\Process\ProcessPool;
-
 abstract class ActionAbstract
 {
-    private $inputParameters = [];
+    private $parameters = [];
 
     /**
      * @return array
      */
-    public function getInputParameters(): array
+    public function getParameters(): array
     {
-        return $this->inputParameters;
+        return $this->parameters;
     }
 
     /**
-     * @param array $inputParameters
+     * @param array $parameters
      * @return ActionAbstract
      */
-    public function setInputParameters(array $inputParameters = []): ActionAbstract
+    public function setParameters(array $parameters = []): ActionAbstract
     {
-        $this->inputParameters = $inputParameters;
+        $this->parameters = $parameters;
         return $this;
     }
 
@@ -33,8 +31,7 @@ abstract class ActionAbstract
     abstract public function prepare(): ActionAbstract;
 
     /**
-     * Создание процессов, обеъдинение в пул
-     * @return ProcessPool
+     * Создание задачи
      */
-    abstract public function createProcessPool(): ProcessPool;
+    abstract public function createTask();
 }

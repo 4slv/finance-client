@@ -2,28 +2,65 @@
 
 namespace ApiClient\Task;
 
-use ApiClient\Process\ProcessPool;
-
 class Task
 {
-    /** @var ProcessPool $processPool */
-    private $processPool;
+    private $transfer;
+
+    private $action;
+
+    private $parameters;
 
     /**
-     * @return ProcessPool
+     * @return mixed
      */
-    public function getProcessPool(): ProcessPool
+    public function getTransfer()
     {
-        return $this->processPool;
+        return $this->transfer;
     }
 
     /**
-     * @param ProcessPool $processPool
+     * @param mixed $transfer
      * @return Task
      */
-    public function setProcessPool(ProcessPool $processPool): Task
+    public function setTransfer($transfer)
     {
-        $this->processPool = $processPool;
+        $this->transfer = $transfer;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    /**
+     * @param mixed $action
+     * @return Task
+     */
+    public function setAction($action)
+    {
+        $this->action = $action;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @param mixed $parameters
+     * @return Task
+     */
+    public function setParameters($parameters)
+    {
+        $this->parameters = $parameters;
         return $this;
     }
 }

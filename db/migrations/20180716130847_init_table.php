@@ -179,7 +179,7 @@ class InitTable extends AbstractMigration
             ->addColumn(
                 'status',
                 'enum',
-                ['values' => ['success', 'error', 'reject'],
+                ['values' => ['success', 'error', 'reject', 'inWork'],
                     'comment' => 'Статусы выполнения задачи'])
             ->create();
     }
