@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0b36afe8665342977f72204ab9044bc2",
+    "content-hash": "43cbf48bda00ab4cf70bf11a609d24dd",
     "packages": [
         {
             "name": "robmorgan/phinx",

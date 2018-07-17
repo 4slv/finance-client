@@ -1,8 +1,8 @@
 <?php
 
-namespace ApiClient\Logger;
+namespace ApiClient\History;
 
-class Logger
+class History
 {
     public function add(){}
     public function save(){}
