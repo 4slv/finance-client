@@ -4,6 +4,11 @@ namespace ApiClient\Task;
 
 class Task
 {
+    const NEW = 'new';
+    const SUCCESS = 'success';
+    const ERROR = 'error';
+    const IN_WORK = 'in_work';
+
     private $transfer;
 
     private $action;

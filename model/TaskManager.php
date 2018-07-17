@@ -9,90 +9,51 @@ use ApiClient\IO\RequestResolver;
 use ApiClient\IO\ResponseInterface;
 use ApiClient\Process\Process;
 use ApiClient\Process\ProcessPoolPart;
+use Doctrine\ORM\EntityManager;
+use Framework\Database\CEntityManager;
 use http\Env\Request;
 
 class TaskManager
 {
-    /** @var Task $task */
-    private $task;
+    /** @var Task[] $tasks */
+    private $tasks;
 
-    /** @var AbstractRequest $request */
-    private $request;
+    /** @var \PDO $pdo */
+    private $pdo;
 
-    /** @var ResponseInterface $response */
-    private $response;
-
-    public function setTask(Task $task): TaskManager
+    public function __construct()
     {
-        $this->task = $task;
+        $this->pdo = CEntityManager::getPdoConnect();
+    }
+
+    public function addTask(Task $task): TaskManager
+    {
+        array_push($this->tasks, $task);
 
         return $this;
     }
 
-    public function getTask(): Task
+    public function getTasks(): array
     {
-        return $this->task;
+        return $this->tasks;
     }
 
-    /**
-     * @return AbstractRequest
-     */
-    public function getRequest(): AbstractRequest
+    public function createTasks()
     {
-        return $this->request;
-    }
+        $sql = "INSERT INTO Task ( createDatetime, parameters, status ) VALUES";
 
-    /**
-     * @param AbstractRequest $request
-     * @return TaskManager
-     */
-    public function setRequest(AbstractRequest $request): TaskManager
-    {
-        $this->request = $request;
-        return $this;
-    }
+        foreach($this->getTasks() as $task){
+            if($task instanceof Task){
+                $insertRow = sprintf("('%s', '%s', '%s')",
+                    date('Y-m-d H:i:s'),
+                    json_encode($task->getParameters()),
+                    Task::NEW
+                );
+                $insertRow .= end($this->getTasks()) ? ';' : ',';
+                $sql .= $insertRow;
+            }
+        }
 
-    /**
-     * @return ResponseInterface
-     */
-    public function getResponse(): ResponseInterface
-    {
-        return $this->response;
-    }
-
-    /**
-     * @param ResponseInterface $response
-     * @return TaskManager
-     */
-    public function setResponse(ResponseInterface $response): TaskManager
-    {
-        $this->response = $response;
-        return $this;
-    }
-
-    /** создание запроса
-     * @throws \Exception
-     */
-    public function createRequest(): TaskManager
-    {
-        //
-    }
-
-    /** отправка запроса, получение ответа */
-    public function sendRequest(): TaskManager
-    {
-        //
-
-    }
-
-    /** действие после получения ответа */
-    public function afterRequest(): TaskManager
-    {
-        //
-    }
-
-    public function processToJson()
-    {
-
+        $this->pdo->query($sql)->execute();
     }
 }

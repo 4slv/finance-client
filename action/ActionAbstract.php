@@ -2,11 +2,32 @@
 
 namespace ApiClient\Action;
 
-use ApiClient\Task\Task;
+use ApiClient\Task\TaskManager;
 
 abstract class ActionAbstract
 {
     private $parameters = [];
+
+    /** @var TaskManager $taskManager */
+    private $taskManager;
+
+    /**
+     * @return TaskManager
+     */
+    public function getTaskManager(): TaskManager
+    {
+        return $this->taskManager;
+    }
+
+    /**
+     * @param TaskManager $taskManager
+     * @return ActionAbstract
+     */
+    public function setTaskManager(TaskManager $taskManager): ActionAbstract
+    {
+        $this->taskManager = $taskManager;
+        return $this;
+    }
 
     /**
      * @return array
@@ -33,11 +54,7 @@ abstract class ActionAbstract
     abstract public function prepare(): ActionAbstract;
 
     /**
-     * Создание задачи
+     * Генерация задач
      */
-    public function createTask()
-    {
-        $task = new Task();
-        $task->setAction($this);
-    }
+    abstract public function generateTasks(): ActionAbstract;
 }
