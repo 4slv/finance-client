@@ -2,64 +2,77 @@
 
 namespace ApiClient\Task;
 
-use ApiClient\IO\Request;
-use ApiClient\IO\Response;
+use ApiClient\IO\HttpAbstractRequest;
+use ApiClient\IO\HttpResponse;
+use ApiClient\IO\AbstractRequest;
+use ApiClient\IO\RequestResolver;
+use ApiClient\IO\ResponseInterface;
+use ApiClient\Process\Process;
+use ApiClient\Process\ProcessPoolPart;
+use http\Env\Request;
 
 class TaskManager
 {
-    /** @var Task[] $tasks */
-    private $tasks = [];
+    /** @var Task $task */
+    private $task;
 
-    /** @var Request $request */
+    /** @var AbstractRequest $request */
     private $request;
 
-    /** @var Response $response */
+    /** @var ResponseInterface $response */
     private $response;
 
-    public function addTask(Task $task): TaskManager
+    public function setTask(Task $task): TaskManager
     {
-        array_push($this->tasks, $task);
+        $this->task = $task;
 
         return $this;
     }
 
+    public function getTask(): Task
+    {
+        return $this->task;
+    }
+
     /**
-     * @return Request
+     * @return AbstractRequest
      */
-    public function getRequest(): Request
+    public function getRequest(): AbstractRequest
     {
         return $this->request;
     }
 
     /**
-     * @param Request $request
+     * @param AbstractRequest $request
      * @return TaskManager
      */
-    public function setRequest(Request $request): TaskManager
+    public function setRequest(AbstractRequest $request): TaskManager
     {
         $this->request = $request;
         return $this;
     }
 
     /**
-     * @return Response
+     * @return ResponseInterface
      */
-    public function getResponse(): Response
+    public function getResponse(): ResponseInterface
     {
         return $this->response;
     }
 
     /**
-     * @param Response $response
+     * @param ResponseInterface $response
      * @return TaskManager
      */
-    public function setResponse(Response $response): TaskManager
+    public function setResponse(ResponseInterface $response): TaskManager
     {
         $this->response = $response;
         return $this;
     }
 
-    /** создание запроса */
+    /** создание запроса
+     * @throws \Exception
+     */
     public function createRequest(): TaskManager
     {
         //
@@ -69,11 +82,17 @@ class TaskManager
     public function sendRequest(): TaskManager
     {
         //
+
     }
 
     /** действие после получения ответа */
     public function afterRequest(): TaskManager
     {
         //
+    }
+
+    public function processToJson()
+    {
+
     }
 }
