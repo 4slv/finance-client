@@ -15,21 +15,9 @@ class InitCommand
         $parameters = [];
 
         $action = new CalcPenalty(); //todo
-        $processPull = $action->setParameters($parameters)
+
+        $task = $action->setParameters($parameters)
             ->prepare()
-            ->createProcessPool();
-
-        $task = new Task();
-        $task->setProcessPool($processPull);
-
-        $taskManager = new TaskManager();
-        try{
-            $taskManager->setTask($task)
-                ->createRequest()
-                ->sendRequest()
-                ->afterRequest();
-        }catch(\Exception $e){
-            //
-        }
+            ->createTask();
     }
 }

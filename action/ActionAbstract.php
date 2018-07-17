@@ -2,6 +2,8 @@
 
 namespace ApiClient\Action;
 
+use ApiClient\Task\Task;
+
 abstract class ActionAbstract
 {
     private $parameters = [];
@@ -33,5 +35,9 @@ abstract class ActionAbstract
     /**
      * Создание задачи
      */
-    abstract public function createTask();
+    public function createTask()
+    {
+        $task = new Task();
+        $task->setAction($this);
+    }
 }
