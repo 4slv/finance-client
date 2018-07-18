@@ -2,6 +2,7 @@
 
 namespace ApiClient\Model;
 
+use ApiClient\App\Status;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
@@ -16,7 +17,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
  * Task
  *
  * @Table(name="ApiClientTask", indexes={@Index(name="action", columns={"action"}), @Index(name="transfer", columns={"transfer"})})
- * @Entity
+ * @Entity(repositoryClass="ApiClient\Repository\TaskRepository")
  */
 class Task
 {
@@ -37,6 +38,13 @@ class Task
     private $parameters;
 
     /**
+     * @var integer
+     *
+     * @Column(name="creditId", type="integer", nullable=false, options={"comment"="Идентификатор кредита"})
+     */
+    private $creditId;
+
+    /**
      * @var \DateTime
      *
      * @Column(name="createDatetime", type="datetime", nullable=false, options={"comment"="Время создания"})
@@ -46,9 +54,23 @@ class Task
     /**
      * @var string
      *
-     * @Column(name="status", type="string", length=0, nullable=false, options={"comment"="Статусы выполнения задачи"})
+     * @Column(name="status", type="string", nullable=false, options={"comment"="Статусы выполнения задачи", "default" = "new"})
      */
     private $status;
+
+    /**
+     * @var integer
+     *
+     * @Column(name="attempt", type="integer", nullable=false, options={"comment"="Идентификатор кредита", "default" = 0})
+     */
+    private $attempt;
+
+    /**
+     * @var boolean
+     *
+     * @Column(name="inWork", type="boolean", nullable=false, options={"comment"="Идентификатор кредита", "default" = false})
+     */
+    private $inWork;
 
     /**
      * @var Action
@@ -69,6 +91,15 @@ class Task
      * })
      */
     private $transfer;
+
+    public function __construct()
+    {
+        $this->createDatetime = new \DateTime();
+        $this->status = Status::NEW;
+        $this->inWork = false;
+        $this->attempt = 0;
+        $this->parameters = json_encode([]);
+    }
 
     /**
      * Get id.
@@ -181,9 +212,9 @@ class Task
      * @param array $parameters
      * @return Task
      */
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters = [])
     {
-        $this->parameters = json_encode($parameters);
+        $this->parameters = $parameters;
 
         return $this;
     }
@@ -191,10 +222,46 @@ class Task
     /**
      * Get parameters.
      *
-     * @return array
+     * @return string
      */
-    public function getParameters(): array
+    public function getParameters(): string
     {
-        return json_decode($this->parameters);
+        return json_encode($this->parameters);
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreditId(): int
+    {
+        return $this->creditId;
+    }
+
+    /**
+     * @param int $creditId
+     * @return Task
+     */
+    public function setCreditId(int $creditId): Task
+    {
+        $this->creditId = $creditId;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAttempt(): int
+    {
+        return $this->attempt;
+    }
+
+    /**
+     * @param int $attempt
+     * @return Task
+     */
+    public function setAttempt(int $attempt): Task
+    {
+        $this->attempt = $attempt;
+        return $this;
     }
 }

@@ -3,7 +3,7 @@
 namespace ApiClient\Action;
 
 use ApiClient\Model\Action;
-use ApiClient\Task\TaskManager;
+use ApiClient\App\TaskManager;
 
 abstract class ActionAbstract
 {

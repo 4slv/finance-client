@@ -28,6 +28,13 @@ class Action
     /**
      * @var string
      *
+     * @Column(name="name", type="string", nullable=false, options={"comment"="Название действия"})
+     */
+    private $name;
+
+    /**
+     * @var string
+     *
      * @Column(name="parameters", type="json", nullable=false, options={"comment"="Параметры задачи в формате JSON"})
      */
     private $parameters;
@@ -64,6 +71,24 @@ class Action
     public function getParameters(): array
     {
         return json_decode($this->parameters);
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return Action
+     */
+    public function setName(string $name): Action
+    {
+        $this->name = $name;
+        return $this;
     }
 
 }

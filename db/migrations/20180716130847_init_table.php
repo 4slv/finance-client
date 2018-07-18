@@ -3,7 +3,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class InitTable extends AbstractMigration
+class ApiClientInitTable extends AbstractMigration
 {
     public function change()
     {
@@ -15,6 +15,11 @@ class InitTable extends AbstractMigration
             ['comment' => 'Очередь задач']
         );
         $table
+            ->addColumn(
+                'name',
+                'string',
+                ['comment' => 'Название действия']
+            )
             ->addColumn(
                 'parameters',
                 'json',
@@ -61,15 +66,30 @@ class InitTable extends AbstractMigration
                 ['comment' => 'Параметры задачи в формате JSON']
             )
             ->addColumn(
+                'creditId',
+                'integer',
+                ['comment' => 'Идентификатор кредита']
+            )
+            ->addColumn(
                 'transfer',
                 'integer',
-                ['comment' => 'Идентификатор передачи']
+                ['null' => true, 'comment' => 'Идентификатор передачи']
             )
             ->addColumn(
                 'status',
                 'enum',
                 ['values' => ['new', 'success', 'error', 'reject', 'inWork'],
-                    'comment' => 'Статусы выполнения задачи']
+                    'comment' => 'Статусы выполнения задачи', ['default' => 'new']]
+            )
+            ->addColumn(
+                'attempt',
+                'integer',
+                ['comment' => 'Количество выполнений', ['default' => 0]]
+            )
+            ->addColumn(
+                'inWork',
+                'bool',
+                ['comment' => 'Задача находится в работе', ['default' => false]]
             )
             ->addForeignKey(
                 'action',

@@ -7,8 +7,16 @@ final class ActionFactory
     /**
      * @return ActionAbstract|null
      */
-    public function getCalcPenalty(): ?ActionAbstract
+    public function getFirstAction(): ?ActionAbstract
     {
-        return new CalcPenalty();
+        return new FirstAction();
+    }
+
+    /**
+     * @return ActionAbstract|null
+     */
+    public function getSecondAction(): ?ActionAbstract
+    {
+        return new SecondAction();
     }
 }
