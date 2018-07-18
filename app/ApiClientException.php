@@ -1,6 +1,6 @@
 <?php
 
-namespace ApiClient\Exception;
+namespace ApiClient\App;
 
 class ApiClientException extends \Exception
 {

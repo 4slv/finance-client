@@ -1,14 +1,13 @@
 <?php
 
-namespace ApiClient\Transfer;
+namespace ApiClient\App;
 
 class Transfer
 {
     /**
-     * Получает все открытые задачи
-     * @param int $size
+     * Получает все открытые задачи в рамках одного действия
      */
-    public function getAllOpenTasks()
+    public function getOpenTasks()
     {
 
     }

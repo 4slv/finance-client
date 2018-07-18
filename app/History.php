@@ -1,6 +1,6 @@
 <?php
 
-namespace ApiClient\History;
+namespace ApiClient\App;
 
 class History
 {

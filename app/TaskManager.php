@@ -1,6 +1,6 @@
 <?php
 
-namespace ApiClient\Task;
+namespace ApiClient\App;
 
 use ApiClient\Model\Task;
 use Doctrine\ORM\EntityManager;

@@ -1,6 +1,6 @@
 <?php
 
-namespace ApiClient\Command;
+namespace ApiClient\App;
 
 use ApiClient\Action\CalcPenalty;
 use ApiClient\Model\Action;
@@ -20,8 +20,6 @@ class ApiClient
      */
     public function createTasks(array $inputParameters)
     {
-        /** @var array $inputParameters внешние параметры */
-
         $actionModel = new Action();
         $actionModel->setParameters($inputParameters);
         $taskManager = new TaskManager();
