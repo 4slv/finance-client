@@ -8,130 +8,89 @@ class InitTable extends AbstractMigration
     public function change()
     {
         /**
-         * TASK
+         * ACTION
          */
         $table = $this->table(
-            'Task',
-            ['comment' => 'Задача']
-        );
-        $table
-            ->addColumn(
-                'datetime',
-                'datetime',
-                ['comment' => 'Время создания']
-            )
-            ->addColumn(
-                'processPull',
-                'integer',
-                ['comment' => 'Идентификатор пула запросов']
-            )
-            ->addColumn(
-                'status',
-                'enum',
-                ['comment' => 'Статус выполнения']
-            )
-            ->addForeignKey(
-                'processPull',
-                'ProcessPull',
-                'id',
-                ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
-            )
-            ->addForeignKey(
-                'status',
-                'Status',
-                'status',
-                ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
-            )
-            ->create();
-
-        /**
-         * QUEUE
-         */
-        $table = $this->table(
-            'Queue',
+            'ApiClientAction',
             ['comment' => 'Очередь задач']
         );
         $table
             ->addColumn(
-                'task',
-                'integer',
-                ['comment' => 'Идентификатор задачи']
-            )
-            ->addColumn(
-                'createDatetime',
-                'createDatetime',
-                ['comment' => 'Время постановки в очередь']
-            )
-            ->addColumn(
-                'lastRunDatetime',
-                'lastRunDatetime',
-                ['comment' => 'Время последнего выполнения']
-            )
-            ->addColumn(
-                'attempt',
-                'integer',
-                ['comment' => 'Количество попыток выполнения задачи']
-            )
-            ->addColumn(
-                'status',
-                'enum',
-                ['comment' => 'Статус выполнения']
-            )
-            ->addForeignKey(
-                'task',
-                'Task',
-                'id',
-                ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
-            )
-            ->addForeignKey(
-                'status',
-                'Status',
-                'status',
-                ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
+                'parameters',
+                'json',
+                ['comment' => 'Внешние параметры действия в формате JSON']
             )
             ->create();
 
         /**
-         * PROCESS
+         * TRANSFER
          */
         $table = $this->table(
-            'Process',
-            ['comment' => 'Процесс']
+            'ApiClientTransfer',
+            ['comment' => 'Передача']
         );
         $table
             ->addColumn(
-                'processPull',
+                'datetime',
+                'datetime',
+                ['comment' => 'Время передачи']
+            )
+            ->create();
+
+        /**
+         * TASK
+         */
+        $table = $this->table(
+            'ApiClientTask',
+            ['comment' => 'Задача']
+        );
+        $table
+            ->addColumn(
+                'createDatetime',
+                'datetime',
+                ['comment' => 'Время создания']
+            )
+            ->addColumn(
+                'action',
                 'integer',
-                ['comment' => 'Идентификатор пула процессов']
+                ['comment' => 'Идентификатор действия']
             )
             ->addColumn(
                 'parameters',
-                'text',
-                ['comment' => 'Параметры процесса в формате JSON']
+                'json',
+                ['comment' => 'Параметры задачи в формате JSON']
+            )
+            ->addColumn(
+                'transfer',
+                'integer',
+                ['comment' => 'Идентификатор передачи']
+            )
+            ->addColumn(
+                'status',
+                'enum',
+                ['values' => ['new', 'success', 'error', 'reject', 'inWork'],
+                    'comment' => 'Статусы выполнения задачи']
             )
             ->addForeignKey(
-                'processPull',
-                'ProcessPull',
+                'action',
+                'ApiClientAction',
+                'id',
+                ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
+            )
+            ->addForeignKey(
+                'transfer',
+                'ApiClientTransfer',
                 'id',
                 ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
             )
             ->create();
 
         /**
-         * PROCESS_POOL
+         * TRANSFER_HISTORY
          */
         $table = $this->table(
-            'ProcessPool',
-            ['comment' => 'Пул процессов']
-        );
-        $table->create();
-
-        /**
-         * HISTORY
-         */
-        $table = $this->table(
-            'History',
-            ['comment' => 'История задач']
+            'ApiClientTransferHistory',
+            ['comment' => 'История передач']
         );
         $table
             ->addColumn(
@@ -140,47 +99,38 @@ class InitTable extends AbstractMigration
                 ['comment' => 'Идентификатор задачи']
             )
             ->addColumn(
+                'transfer',
+                'integer',
+                ['comment' => 'Идентификатор передачи']
+            )
+            ->addColumn(
                 'datetime',
                 'datetime',
-                ['comment' => 'Время выполнения задачи']
+                ['comment' => 'Время выполнения передачи']
             )
             ->addColumn(
                 'status',
                 'enum',
-                ['comment' => 'Статус выполнения']
+                ['values' => ['new', 'success', 'error', 'reject', 'inWork'],
+                    'comment' => 'Статусы выполнения задачи']
             )
             ->addColumn(
                 'description',
                 'string',
-                ['comment' => 'Текст ошибки, если запрос выполнен с ошибкой']
+                ['comment' => 'Текст ошибки, если задача выполнена с ошибкой']
             )
             ->addForeignKey(
                 'task',
-                'Task',
+                'ApiClientTask',
                 'id',
                 ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
             )
             ->addForeignKey(
-                'status',
-                'Status',
-                'status',
+                'transfer',
+                'ApiClientTransfer',
+                'id',
                 ['delete'=> 'RESTRICT', 'update'=> 'NO_ACTION']
             )
-            ->create();
-
-        /**
-         * STATUS
-         */
-        $table = $this->table(
-            'Status',
-            ['comment' => 'Статусы задач']
-        );
-        $table
-            ->addColumn(
-                'status',
-                'enum',
-                ['values' => ['success', 'error', 'reject', 'inWork'],
-                    'comment' => 'Статусы выполнения задачи'])
             ->create();
     }
 }

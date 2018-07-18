@@ -6,10 +6,13 @@
 
   "autoload": {
     "psr-4": {
-      "ApiClient\\": ""
+      "ApiClient\\": "",
+      "ApiClient\\Model\\": "models",
+      "ApiClient\\Repository\\": "repositories"
     }
   },
   "require": {
-    "robmorgan/phinx": "0.9.2"
+    "robmorgan/phinx": "0.9.2",
+    "doctrine/orm": "v2.6.*"
   }
 }
