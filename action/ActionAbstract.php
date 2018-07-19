@@ -2,6 +2,7 @@
 
 namespace ApiClient\Action;
 
+use ApiClient\App\ApiClientException;
 use ApiClient\Model\Action;
 use ApiClient\App\TaskManager;
 
@@ -51,6 +52,14 @@ abstract class ActionAbstract
 
     /**
      * Генерация задач
+     * @throws ApiClientException
      */
-    abstract public function generateTasks(): void ;
+    public function generateTasks()
+    {
+        if(is_null($this->getTaskManager()))
+            throw new ApiClientException("TaskManager is not initialized");
+
+        if(is_null($this->getActionModel()))
+            throw new ApiClientException("Model Action is not initialized");
+    }
 }

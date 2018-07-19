@@ -3,6 +3,9 @@
 namespace ApiClient\Model;
 
 use ApiClient\App\Status;
+use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
@@ -12,6 +15,8 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\JoinColumns;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * Task
@@ -45,7 +50,7 @@ class Task
     private $creditId;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @Column(name="createDatetime", type="datetime", nullable=false, options={"comment"="Время создания"})
      */
@@ -54,51 +59,57 @@ class Task
     /**
      * @var string
      *
-     * @Column(name="status", type="string", nullable=false, options={"comment"="Статусы выполнения задачи", "default" = "new"})
+     * @Column(name="status", type="string", nullable=false, options={"comment"="Статусы выполнения задачи"})
      */
     private $status;
 
     /**
      * @var integer
      *
-     * @Column(name="attempt", type="integer", nullable=false, options={"comment"="Идентификатор кредита", "default" = 0})
+     * @Column(name="attempt", type="integer", nullable=false, options={"comment"="Идентификатор кредита"})
      */
     private $attempt;
 
     /**
      * @var boolean
      *
-     * @Column(name="inWork", type="boolean", nullable=false, options={"comment"="Идентификатор кредита", "default" = false})
+     * @Column(name="inWork", type="boolean", nullable=false, options={"comment"="Идентификатор кредита"})
      */
     private $inWork;
+
+    /**
+     * @var string
+     *
+     * @Column(name="description", type="string", nullable=true, options={"comment"="Комментарий к задаче от сервера"})
+     */
+    private $description;
 
     /**
      * @var Action
      *
      * @ManyToOne(targetEntity="ApiClient\Model\Action")
      * @JoinColumns({
-     *   @JoinColumn(name="action", referencedColumnName="id")
+     *   @JoinColumn(name="action", referencedColumnName="id"),
      * })
      */
     private $action;
 
     /**
-     * @var Transfer
+     * @var Task
      *
-     * @ManyToOne(targetEntity="ApiClient\Model\Transfer")
-     * @JoinColumns({
-     *   @JoinColumn(name="transfer", referencedColumnName="id")
-     * })
+     * @ManyToMany(targetEntity="ApiClient\Model\Transfer", inversedBy="tasks")
+     * @JoinTable(name="ApiClientTaskTransfer")
      */
-    private $transfer;
+    private $transfers;
 
     public function __construct()
     {
-        $this->createDatetime = new \DateTime();
-        $this->status = Status::NEW;
+        $this->createDatetime = new DateTime();
+        $this->status = Status::OPEN;
         $this->inWork = false;
         $this->attempt = 0;
         $this->parameters = json_encode([]);
+        $this->transfers = new ArrayCollection();
     }
 
     /**
@@ -112,9 +123,57 @@ class Task
     }
 
     /**
+     * Set parameters.
+     *
+     * @param array $parameters
+     *
+     * @return Task
+     */
+    public function setParameters($parameters)
+    {
+        $this->parameters = $parameters;
+
+        return $this;
+    }
+
+    /**
+     * Get parameters.
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * Set creditId.
+     *
+     * @param int $creditId
+     *
+     * @return Task
+     */
+    public function setCreditId($creditId)
+    {
+        $this->creditId = $creditId;
+
+        return $this;
+    }
+
+    /**
+     * Get creditId.
+     *
+     * @return int
+     */
+    public function getCreditId()
+    {
+        return $this->creditId;
+    }
+
+    /**
      * Set createDatetime.
      *
-     * @param \DateTime $createDatetime
+     * @param DateTime $createDatetime
      *
      * @return Task
      */
@@ -128,7 +187,7 @@ class Task
     /**
      * Get createDatetime.
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getCreateDatetime()
     {
@@ -160,6 +219,54 @@ class Task
     }
 
     /**
+     * Set attempt.
+     *
+     * @param int $attempt
+     *
+     * @return Task
+     */
+    public function setAttempt($attempt)
+    {
+        $this->attempt = $attempt;
+
+        return $this;
+    }
+
+    /**
+     * Get attempt.
+     *
+     * @return int
+     */
+    public function getAttempt()
+    {
+        return $this->attempt;
+    }
+
+    /**
+     * Set inWork.
+     *
+     * @param bool $inWork
+     *
+     * @return Task
+     */
+    public function setInWork($inWork)
+    {
+        $this->inWork = $inWork;
+
+        return $this;
+    }
+
+    /**
+     * Get inWork.
+     *
+     * @return bool
+     */
+    public function getInWork()
+    {
+        return $this->inWork;
+    }
+
+    /**
      * Set action.
      *
      * @param Action|null $action
@@ -184,84 +291,62 @@ class Task
     }
 
     /**
-     * Set transfer.
+     * Add transfer.
      *
-     * @param Transfer|null $transfer
+     * @param Transfer $transfer
      *
      * @return Task
      */
-    public function setTransfer(Transfer $transfer = null)
+    public function addTransfer(Transfer $transfer)
     {
-        $this->transfer = $transfer;
+        $this->transfers[] = $transfer;
 
         return $this;
     }
 
     /**
-     * Get transfer.
+     * Remove transfer.
      *
-     * @return Transfer|null
+     * @param Transfer $transfer
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function getTransfer()
+    public function removeTransfer(Transfer $transfer)
     {
-        return $this->transfer;
+        return $this->transfers->removeElement($transfer);
     }
 
     /**
-     * Set parameters.
-     * @param array $parameters
+     * Get transfers.
+     *
+     * @return Collection
+     */
+    public function getTransfers()
+    {
+        return $this->transfers;
+    }
+
+    /**
+     * Set description.
+     *
+     * @param string $description
+     *
      * @return Task
      */
-    public function setParameters(array $parameters = [])
+    public function setDescription($description)
     {
-        $this->parameters = $parameters;
+        $this->description = $description;
 
         return $this;
     }
 
     /**
-     * Get parameters.
+     * Get description.
      *
      * @return string
      */
-    public function getParameters(): string
+    public function getDescription()
     {
-        return json_encode($this->parameters);
-    }
-
-    /**
-     * @return int
-     */
-    public function getCreditId(): int
-    {
-        return $this->creditId;
-    }
-
-    /**
-     * @param int $creditId
-     * @return Task
-     */
-    public function setCreditId(int $creditId): Task
-    {
-        $this->creditId = $creditId;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAttempt(): int
-    {
-        return $this->attempt;
-    }
-
-    /**
-     * @param int $attempt
-     * @return Task
-     */
-    public function setAttempt(int $attempt): Task
-    {
-        $this->attempt = $attempt;
-        return $this;
+        return $this->description;
     }
 }

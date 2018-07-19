@@ -6,7 +6,6 @@ final class ActionResolver
 {
     /**
      * @param string $actionName
-     * @param array $parameters
      * @return ActionAbstract|null
      */
     public function resolve(string $actionName): ?ActionAbstract

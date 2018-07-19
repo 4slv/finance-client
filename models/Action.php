@@ -58,7 +58,7 @@ class Action
      */
     public function setParameters(array $parameters)
     {
-        $this->parameters = json_encode($parameters);
+        $this->parameters = $parameters;
 
         return $this;
     }
@@ -70,7 +70,7 @@ class Action
      */
     public function getParameters(): array
     {
-        return json_decode($this->parameters);
+        return $this->parameters;
     }
 
     /**

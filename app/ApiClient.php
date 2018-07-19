@@ -3,19 +3,18 @@
 namespace ApiClient\App;
 
 use ApiClient\Action\ActionResolver;
-use ApiClient\IO\HttpRequest;
+use ApiClient\IO\Request;
 use ApiClient\Model\Action;
+use ApiClient\Model\Transfer;
 
+/** Класс усправление модулем */
 class ApiClient
 {
-    public function __construct()
-    {
-        //require __DIR__.'\..\vendor\autoload.php';
-    }
-
     /**
+     * Создает задачи на основе действия и праметров
      * @param string $actionName
      * @param array $inputParameters
+     * @throws ApiClientException
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
@@ -37,17 +36,32 @@ class ApiClient
         $taskManager->save();
     }
 
+    /**
+     * Отправляет задачи
+     * @return null возвращает в случае отсутствия задач в очереди
+     * @return true возвращает в случае отправки
+     * @throws ApiClientException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function transfer()
     {
         $taskManager = new TaskManager();
-        $request = new HttpRequest();
-        $dispatch = new Dispatch();
+        if(is_null($taskManager->getOpenTasks()))
+            return null;
 
-        $dispatch
+        $transferManager = new TransferManager();
+        $transfer = new Transfer();
+        $request = new Request();
+
+        $transferManager
             ->setTaskManager($taskManager)
-            ->setRequest($request);
+            ->setTransfer($transfer)
+            ->setRequest($request)
+            ->buildBody()
+            ->transfer()
+            ->afterRequest();
 
-        $openTasks = $dispatch->getTaskManager()->getTasksForTransport();
-        $dispatch->createBody()->transfer();
+        return true;
     }
 }
