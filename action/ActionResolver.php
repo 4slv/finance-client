@@ -13,8 +13,7 @@ final class ActionResolver
         $factoryAction = new ActionFactory();
 
         switch($actionName){
-            case 'FirstAction': $action = $factoryAction->getFirstAction(); break;
-            case 'SecondAction': $action = $factoryAction->getSecondAction(); break;
+            case 'TestAction': $action = $factoryAction->getTestAction(); break;
             default: return null;
         }
 

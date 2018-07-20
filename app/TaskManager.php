@@ -29,16 +29,6 @@ class TaskManager
      */
     private $taskRepository;
 
-    /**
-     * TaskManager constructor.
-     * @throws ApiClientException
-     */
-    public function __construct()
-    {
-        $this->em = LocalEntityManager::getEntityManager();
-        $this->taskRepository = $this->em->getRepository(Task::class);
-    }
-
     public function addTask(Task $task): TaskManager
     {
         array_push($this->tasks, $task);
@@ -49,6 +39,42 @@ class TaskManager
     public function getTasks(): array
     {
         return $this->tasks;
+    }
+
+    /**
+     * @return EntityManager
+     */
+    public function getEm(): EntityManager
+    {
+        return $this->em;
+    }
+
+    /**
+     * @param EntityManager $em
+     * @return TaskManager
+     */
+    public function setEm(EntityManager $em): TaskManager
+    {
+        $this->em = $em;
+        return $this;
+    }
+
+    /**
+     * @return \ApiClient\Repository\TaskRepository
+     */
+    public function getTaskRepository(): \ApiClient\Repository\TaskRepository
+    {
+        return $this->taskRepository;
+    }
+
+    /**
+     * @param \ApiClient\Repository\TaskRepository $taskRepository
+     * @return TaskManager
+     */
+    public function setTaskRepository(\ApiClient\Repository\TaskRepository $taskRepository): TaskManager
+    {
+        $this->taskRepository = $taskRepository;
+        return $this;
     }
 
     /**
@@ -119,21 +145,15 @@ class TaskManager
     }
 
     /**
-     * Для открытых задач в очереди: устанавливает inWork = true и attempt++
+     * Для открытых задач в очереди: устанавливает inWork = true
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function startOpenTasks()
     {
-        foreach($this->getOpenTasks() as $openTask){
-            if($openTask instanceof Task){
-                $openTask->setAttempt($openTask->getAttempt() + 1);
-                $openTask->setInWork(true);
-                $this->em->persist($openTask);
-            }
-        }
-
-        $this->em->flush();
+        $this->taskRepository->setInWorkForTasks(
+            $this->getOpenTasks(), true
+        );
     }
 
     /**
@@ -143,14 +163,14 @@ class TaskManager
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function setStatusForAllOpenTasks(string $status, Transfer $transfer)
+    public function updateStatusForAllOpenTasks(string $status, Transfer $transfer)
     {
         foreach($this->getOpenTasks() as $task){
-            $transfer->addTask($task);
-            $this->changeStatus($task, (new Status($status))->getValue());
+            $task = $this->updateStatus($task, (new Status($status))->getValue());
+            $task->addTransfer($transfer);
+            $this->em->persist($task);
         }
 
-        $this->em->persist($transfer);
         $this->em->flush();
     }
 
@@ -158,36 +178,55 @@ class TaskManager
      * Устанавливает статус для открытых задач в очереди
      * @param array $tasksData
      * @param Transfer $transfer
-     * @param string|null $status если указан, то установится для всех задач
+     * @param string|null $status если указан, то установится для всех открытых задач в очереди
      * @throws ApiClientException
      * @throws \Doctrine\ORM\ORMException
      */
     public function updateTasks(array $tasksData, Transfer $transfer, string $status = null)
     {
+        $updatedTasks = [];
+
         foreach($tasksData as $taskData){
-            $task = $this->taskRepository->find($taskData->taskId);
 
-            if(!$task or !$task instanceof Task){
-                throw new ApiClientException("Задача #%d не найдена", $taskData->taskId);
-            }
-
-            if(!in_array($taskData->status, [Status::ERROR, Status::REJECT, Status::SUCCESS])){
-                throw new ApiClientException(
-                    "Не корректный статус '%s' для задачи #%d", $taskData->status, $taskData->taskId
-                );
-            }
+            $task = $this->getTaskFromData($taskData);
 
             if(!is_null($status)){
                 $taskData->status = (new Status($status))->getValue();
             }
 
+            $task = $this->updateStatus($task, $taskData->status);
             $task->setDescription($taskData->description ?? null);
-            $transfer->addTask($task);
-            $this->changeStatus($task, $taskData->status);
+            $task->setAttempt($task->getAttempt() + 1);
+            $task->setInWork(false);
+            $task->addTransfer($transfer);
+
+            array_push($updatedTasks, $task);
         }
 
-        $this->em->persist($transfer);
-        $this->em->flush();
+        $this->taskRepository->updateTasks($updatedTasks);
+    }
+
+    /**
+     * Получает объект задачи из массива ответа сервера
+     * @param $taskData
+     * @return Task
+     * @throws ApiClientException
+     */
+    private function getTaskFromData($taskData): Task
+    {
+        $task = $this->taskRepository->find($taskData->taskId);
+
+        if(!$task or !$task instanceof Task){
+            throw new ApiClientException("Задача #%d не найдена", $taskData->taskId);
+        }
+
+        if(!in_array($taskData->status, [Status::ERROR, Status::REJECT, Status::SUCCESS])){
+            throw new ApiClientException(
+                "Не корректный статус '%s' для задачи #%d", $taskData->status, $taskData->taskId
+            );
+        }
+
+        return $task;
     }
 
     /**
@@ -196,42 +235,56 @@ class TaskManager
      * @param Status $status
      * @throws \Doctrine\ORM\ORMException
      */
-    private function changeStatus(Task $task, $status)
+    private function updateStatus(Task $task, $status): Task
     {
-        //print $task->getId().' - '.$status.PHP_EOL;
-
         switch($status){
             case Status::SUCCESS or Status::OPEN:
                 if($task->getStatus() == Status::ERROR){
-                    foreach($this->taskRepository->getOpenLinkTasks($task) as $openLinkTask){
-                        $openLinkTask->setStatus(Status::OPEN);
-                        $this->em->persist($openLinkTask);
-                    }
+                    $this->updateStatusForLinkTasks($task, Status::OPEN);
                 }
                 $task->setStatus(Status::CLOSE);
                 break;
             case Status::ERROR:
                 if($task->getStatus() == Status::OPEN){
                     $task->setStatus(Status::ERROR);
-                    foreach($this->taskRepository->getOpenLinkTasks($task) as $openLinkTask){
-                        $openLinkTask->setStatus(Status::BLOCK);
-                        $this->em->persist($openLinkTask);
-                    }
+                    $this->updateStatusForLinkTasks($task, Status::BLOCK);
                 }
                 break;
             case Status::REJECT:
                 $task->setStatus(Status::REJECT);
-                foreach($this->taskRepository->getOpenLinkTasks($task) as $openLinkTask){
-                    $openLinkTask->setStatus(Status::REJECT);
-                    $this->em->persist($openLinkTask);
-                }
+                $this->updateStatusForLinkTasks($task, Status::REJECT);
                 break;
         }
 
-        $task->setInWork(false);
+        return $task;
+    }
 
-        $this->em->persist($task);
-        $this->em->flush();
+    /**
+     * Устанавливает статус для всех связанных задач
+     * @param Task $task
+     * @param string $status
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function updateStatusForLinkTasks(Task $task, string $status)
+    {
+        $openLinkTasks = $this->getOpenLinkTasks($task);
+        if(count($openLinkTasks)){
+            foreach($openLinkTasks as &$openLinkTask){
+                $openLinkTask->setStatus($status);
+            }
+
+            $this->taskRepository->updateTasks($openLinkTasks);
+        }
+    }
+
+    /**
+     * Получает все связанные задачи
+     * @param Task $task
+     * @return array
+     */
+    private function getOpenLinkTasks(Task $task)
+    {
+        return $this->taskRepository->getOpenLinkTasks($task);
     }
 
 }

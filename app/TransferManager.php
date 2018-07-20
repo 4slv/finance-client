@@ -152,7 +152,7 @@ class TransferManager
         $this->getTransfer()->setCode($this->getResponse()->getCode());
 
         if(is_null($data) or $this->getResponse()->getCode() !== 200){
-            $this->getTaskManager()->setStatusForAllOpenTasks(Status::ERROR, $this->getTransfer());
+            $this->getTaskManager()->updateStatusForAllOpenTasks(Status::ERROR, $this->getTransfer());
         } else{
             $this->getTaskManager()->updateTasks($data, $this->getTransfer());
         }

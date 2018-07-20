@@ -7,16 +7,8 @@ final class ActionFactory
     /**
      * @return ActionAbstract|null
      */
-    public function getFirstAction(): ?ActionAbstract
+    public function getTestAction(): ?ActionAbstract
     {
-        return new FirstAction();
-    }
-
-    /**
-     * @return ActionAbstract|null
-     */
-    public function getSecondAction(): ?ActionAbstract
-    {
-        return new SecondAction();
+        return new TestAction();
     }
 }

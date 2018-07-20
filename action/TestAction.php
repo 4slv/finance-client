@@ -15,13 +15,10 @@ class TestAction extends ActionAbstract
     {
         parent::generateTasks();
 
-        //
-
-        //в цикле создаем задачу для каждого действия и добавляем ее в менеджер задач
-        for($i = 0; $i < 25; $i++){
+        foreach($this->getActionModel()->getParameters() as $parameter){
             $task = new Task();
-            $task->setCreditId(($i+100)*3);
-            $task->setParameters(['param1' => 'value1', 'param2' => $i]);
+            $task->setCreditId($parameter);
+            $task->setParameters(['param1' => 'value1']);
             $task->setAction($this->getActionModel());
             $this->getTaskManager()->addTask($task);
         }

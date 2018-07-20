@@ -113,6 +113,18 @@ class Task
     }
 
     /**
+     * Set id.
+     *
+     * @return int
+     */
+    public function setId(int $id): Task
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * Get id.
      *
      * @return int
