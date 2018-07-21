@@ -237,15 +237,16 @@ class TaskManager
      */
     private function updateStatus(Task $task, $status): Task
     {
-        switch($status){
-            case Status::SUCCESS or Status::OPEN:
-                if($task->getStatus() == Status::ERROR){
+        switch ($status) {
+            case Status::SUCCESS:
+            case Status::OPEN:
+                if ($task->getStatus() == Status::ERROR) {
                     $this->updateStatusForLinkTasks($task, Status::OPEN);
                 }
                 $task->setStatus(Status::CLOSE);
                 break;
             case Status::ERROR:
-                if($task->getStatus() == Status::OPEN){
+                if ($task->getStatus() == Status::OPEN) {
                     $task->setStatus(Status::ERROR);
                     $this->updateStatusForLinkTasks($task, Status::BLOCK);
                 }
@@ -267,7 +268,7 @@ class TaskManager
      */
     public function updateStatusForLinkTasks(Task $task, string $status)
     {
-        $openLinkTasks = $this->getOpenLinkTasks($task);
+        $openLinkTasks = $this->taskRepository->getOpenLinkTasks($task);
         if(count($openLinkTasks)){
             foreach($openLinkTasks as &$openLinkTask){
                 $openLinkTask->setStatus($status);
@@ -275,16 +276,6 @@ class TaskManager
 
             $this->taskRepository->updateTasks($openLinkTasks);
         }
-    }
-
-    /**
-     * Получает все связанные задачи
-     * @param Task $task
-     * @return array
-     */
-    private function getOpenLinkTasks(Task $task)
-    {
-        return $this->taskRepository->getOpenLinkTasks($task);
     }
 
 }
