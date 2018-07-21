@@ -1,5 +1,6 @@
 <?php
 
+use ApiClient\App\TaskManager;
 use ApiClient\Model\Task;
 use ApiClient\App\Status;
 use ApiClient\Model\Action;
@@ -26,7 +27,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
         $realTaskDb = [];
         $realActionDb = [];
 
-        $taskManager = $this->getMockBuilder(\ApiClient\App\TaskManager::class)
+        $taskManager = $this->getMockBuilder(TaskManager::class)
             ->setMethods(array('save'))
             ->getMock();
 
@@ -87,7 +88,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
             ->getMock();
 
         $taskRepository->expects($this->any())->method('getOpenTasks')
-            ->willReturnCallback(function ($action) use ($tasksDb, $limit){
+            ->willReturnCallback(function () use ($tasksDb, $limit){
                 $tasks = [];
                 foreach ($tasksDb as $task){
                     if(count($tasks) === $limit) break;
@@ -119,7 +120,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                     if($task->getId() != $dbTask->getId() and
                         $task->getCreditId() == $dbTask->getCreditId() and
                         ($dbTask->getStatus() == Status::OPEN or
-                        $dbTask->getStatus() == Status::BLOCK)
+                            $dbTask->getStatus() == Status::BLOCK)
                     ){
                         array_push($openLinkTasks, $dbTask);
                     }
@@ -160,7 +161,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                     ->setJsonData(json_encode($dataFromServer));
             });
 
-        $taskManager = new \ApiClient\App\TaskManager();
+        $taskManager = new TaskManager();
         $taskManager
             ->setTaskRepository($taskRepository);
 
@@ -190,28 +191,6 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
         }
 
         return true;
-    }
-
-    public function providerCreate()
-    {
-        return [
-            [
-                'TestAction',
-                [100, 101, 102, 103, 104],
-                [
-                    $action = (new Action())
-                        ->setName('TestAction')
-                        ->setParameters([100, 101, 102, 103, 104])
-                ],
-                [
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(100)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(101)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(102)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(104)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                ]
-            ],
-        ];
     }
 
     public function providerTransfer()
@@ -261,6 +240,28 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 ],
             ]
 
+        ];
+    }
+
+    public function providerCreate()
+    {
+        return [
+            [
+                'TestAction',
+                [100, 101, 102, 103, 104],
+                [
+                    $action = (new Action())
+                        ->setName('TestAction')
+                        ->setParameters([100, 101, 102, 103, 104])
+                ],
+                [
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(100)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(101)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(102)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(104)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                ]
+            ],
         ];
     }
 }
