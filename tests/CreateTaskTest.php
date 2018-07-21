@@ -1,163 +1,122 @@
 <?php
 
+use ApiClient\App\TaskManager;
 use ApiClient\Model\Task;
 use ApiClient\App\Status;
 use ApiClient\Model\Action;
 
 class CreateTasksTest extends PHPUnit\Framework\TestCase
 {
-    public function setUp()
-    {
-        \Framework\Database\CEntityManager::connect();
-    }
 
-//    /**
-//     * @dataProvider providerCreate()
-//     * @param $actionName
-//     * @param $actionParameters
-//     * @param $expectedActionDb
-//     * @param $expectedTasksDb
-//     * @throws \ApiClient\App\ApiClientException
-//     * @throws \Doctrine\ORM\ORMException
-//     * @throws \Doctrine\ORM\OptimisticLockException
-//     */
-//    public function testCreateTasks($actionName, $actionParameters, $expectedActionDb, $expectedTasksDb)
-//    {
-//        $actionModel = new Action();
-//        $actionModel->setName($actionName);
-//        $actionModel->setParameters($actionParameters);
-//
-//        $realTaskDb = [];
-//        $realActionDb = [];
-//
-//        $taskManager = $this->getMockBuilder(\ApiClient\App\TaskManager::class)
-//            ->setMethods(array('save'))
-//            ->getMock();
-//
-//        $taskManager->expects($this->once())->method('save')
-//            ->willReturnCallback(function () use ($taskManager, &$realTaskDb, &$realActionDb){
-//                array_push($realActionDb, $taskManager->getTasks()[0]->getAction());
-//                foreach($taskManager->getTasks() as $task){
-//                    array_push($realTaskDb, $task);
-//                }
-//            });
-//
-//        $actionResolver = new \ApiClient\Action\ActionResolver();
-//        $action = $actionResolver->resolve($actionName);
-//        $action
-//            ->setActionModel($actionModel)
-//            ->setTaskManager($taskManager)
-//            ->generateTasks();
-//
-//        $taskManager->save();
-//
-//        $this->assertEquals($expectedActionDb, $realActionDb);
-//
-//        $i = 0;
-//        foreach($realTaskDb as $taskDb){
-//            $taskExp = $expectedTasksDb[$i];
-//            if($taskDb instanceof Task and $taskExp instanceof Task){
-//                $this->assertEquals($taskExp->getAction(), $taskDb->getAction());
-//                $this->assertEquals($taskExp->getParameters(), $taskDb->getParameters());
-//                $this->assertEquals($taskExp->getCreditId(), $taskDb->getCreditId());
-//                $this->assertEquals($taskExp->getStatus(), $taskDb->getStatus());
-//                $this->assertEquals($taskExp->getAttempt(), $taskDb->getAttempt());
-//                $this->assertEquals($taskExp->getInWork(), $taskDb->getInWork());
-//                $this->assertEquals($taskExp->getDescription(), $taskDb->getDescription());
-//            }
-//            $i++;
-//        }
-//
-//    }
-//
-//    public function providerCreate()
-//    {
-//        return [
-//            [
-//                'TestAction',
-//                [100, 101, 102, 103, 104],
-//                [
-//                    $action = (new Action())
-//                        ->setName('TestAction')
-//                        ->setParameters([100, 101, 102, 103, 104])
-//                ],
-//                [
-//                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])
-//                        ->setCreditId(100)
-//                        ->setStatus(Status::OPEN)
-//                        ->setAttempt(0)
-//                        ->setInWork(0)
-//                        ->setDescription(''),
-//                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])
-//                        ->setCreditId(101)
-//                        ->setStatus(Status::OPEN)
-//                        ->setAttempt(0)
-//                        ->setInWork(0)
-//                        ->setDescription(''),
-//                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])
-//                        ->setCreditId(102)
-//                        ->setStatus(Status::OPEN)
-//                        ->setAttempt(0)
-//                        ->setInWork(0)
-//                        ->setDescription(''),
-//                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])
-//                        ->setCreditId(103)
-//                        ->setStatus(Status::OPEN)
-//                        ->setAttempt(0)
-//                        ->setInWork(0)
-//                        ->setDescription(''),
-//                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])
-//                        ->setCreditId(104)
-//                        ->setStatus(Status::OPEN)
-//                        ->setAttempt(0)
-//                        ->setInWork(0)
-//                        ->setDescription(''),
-//                ]
-//            ],
-//        ];
-//    }
+    /**
+     * @dataProvider providerCreate()
+     * @param $actionName
+     * @param $actionParameters
+     * @param $expectedActionDb
+     * @param $expectedTasksDb
+     * @throws \ApiClient\App\ApiClientException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function testCreateTasks($actionName, $actionParameters, $expectedActionDb, $expectedTasksDb)
+    {
+        $actionModel = new Action();
+        $actionModel->setName($actionName);
+        $actionModel->setParameters($actionParameters);
+
+        $realTaskDb = [];
+        $realActionDb = [];
+
+        $taskManager = $this->getMockBuilder(TaskManager::class)
+            ->setMethods(array('save'))
+            ->getMock();
+
+        $taskManager->expects($this->once())->method('save')
+            ->willReturnCallback(function () use ($taskManager, &$realTaskDb, &$realActionDb){
+                array_push($realActionDb, $taskManager->getTasks()[0]->getAction());
+                foreach($taskManager->getTasks() as $task){
+                    array_push($realTaskDb, $task);
+                }
+            });
+
+        $actionResolver = new \ApiClient\Action\ActionResolver();
+        $action = $actionResolver->resolve($actionName);
+        $action
+            ->setActionModel($actionModel)
+            ->setTaskManager($taskManager)
+            ->generateTasks();
+
+        $taskManager->save();
+
+        $this->assertEquals($expectedActionDb, $realActionDb);
+
+        $i = 0;
+        foreach($realTaskDb as $taskDb){
+            $taskExp = $expectedTasksDb[$i];
+            if($taskDb instanceof Task and $taskExp instanceof Task){
+                $this->assertEquals($taskExp->getAction(), $taskDb->getAction());
+                $this->assertEquals($taskExp->getParameters(), $taskDb->getParameters());
+                $this->assertEquals($taskExp->getCreditId(), $taskDb->getCreditId());
+                $this->assertEquals($taskExp->getStatus(), $taskDb->getStatus());
+                $this->assertEquals($taskExp->getAttempt(), $taskDb->getAttempt());
+                $this->assertEquals($taskExp->getInWork(), $taskDb->getInWork());
+                $this->assertEquals($taskExp->getDescription(), $taskDb->getDescription());
+            }
+            $i++;
+        }
+
+    }
 
     /**
      * @dataProvider providerTransfer
      * @param $action
      * @param $dataFromServer
-     * @param $dbTasks
+     * @param $tasksDb
      * @param $expectedDbTasks
      * @return bool|null
      * @throws \ApiClient\App\ApiClientException
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function testTransfer($action, $dbTasks, $expectedDbTasks, $dataFromServer)
+    public function testTransfer($action, $tasksDb, $expectedTasksDb, $dataFromServer)
     {
         $limit = 6;
 
-        $entityManager = \ApiClient\Config\LocalEntityManager::getEntityManager();
-
         $taskRepository = $this->getMockBuilder(\ApiClient\Repository\TaskRepository::class)
             ->disableOriginalConstructor()
-            ->setMethods(array('getOpenTasks', 'getFirstOpenAction', 'setInWorkForTasks', 'getOpenLinkTasks'))
+            ->setMethods(array('getOpenTasks', 'getFirstOpenAction', 'setInWorkForTasks', 'getOpenLinkTasks', 'find', 'updateTasks'))
             ->getMock();
 
-        $taskRepository->expects($this->once())->method('getOpenTasks')
-            ->willReturnCallback(function () use ($dbTasks, $limit){
-                return array_slice($dbTasks, 0, $limit);
+        $taskRepository->expects($this->any())->method('getOpenTasks')
+            ->willReturnCallback(function () use ($tasksDb, $limit){
+                $tasks = [];
+                foreach ($tasksDb as $task){
+                    if(count($tasks) === $limit) break;
+                    if($task instanceof Task and
+                        $task->getInWork() == false and
+                        ($task->getStatus() == Status::OPEN or
+                            $task->getStatus() == Status::ERROR))
+                    {
+                        array_push($tasks, $task);
+                    }
+                }
+                return $tasks;
             });
 
-        $taskRepository->expects($this->once())->method('getFirstOpenAction')
+        $taskRepository->expects($this->any())->method('getFirstOpenAction')
             ->willReturn($action);
 
-        $taskRepository->expects($this->once())->method('setInWorkForTasks')
-            ->willReturnCallback(function () use (&$dbTasks){
-                foreach($dbTasks as &$task){
+        $taskRepository->expects($this->any())->method('setInWorkForTasks')
+            ->willReturnCallback(function () use (&$tasksDb){
+                foreach($tasksDb as &$task){
                     $task->setInWork(true);
                 }
             });
 
-        $taskRepository->expects($this->once())->method('getOpenLinkTasks')
-            ->willReturnCallback(function ($task) use ($dbTasks){
+        $taskRepository->expects($this->any())->method('getOpenLinkTasks')
+            ->willReturnCallback(function ($task) use ($tasksDb){
                 $openLinkTasks = [];
-                foreach($dbTasks as $dbTask){
+                foreach($tasksDb as $dbTask){
                     if($task->getId() != $dbTask->getId() and
                         $task->getCreditId() == $dbTask->getCreditId() and
                         ($dbTask->getStatus() == Status::OPEN or
@@ -169,20 +128,41 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 return $openLinkTasks;
             });
 
+        $taskRepository->expects($this->any())->method('find')
+            ->willReturnCallback(function ($taskId) use ($tasksDb){
+                foreach ($tasksDb as $dbTask){
+                    if($dbTask->getId() == $taskId)
+                        return $dbTask;
+                }
+            });
+
+        $taskRepository->expects($this->any())->method('updateTasks')
+            ->willReturnCallback(function ($tasks) use (&$tasksDb){
+                foreach ($tasksDb as &$dbTask){
+                    foreach ($tasks as $task){
+                        if($task instanceof Task and
+                            $dbTask instanceof Task and
+                            $task->getId() == $dbTask->getId())
+                        {
+                            $dbTask = $task;
+                        }
+                    }
+                }
+            });
+
         $request = $this->getMockBuilder(\ApiClient\IO\Request::class)
             ->setMethods(array('send'))
             ->getMock();
 
-        $taskRepository->expects($this->once())->method('setInWorkForTasks')
+        $request->expects($this->any())->method('send')
             ->willReturnCallback(function () use ($dataFromServer){
                 return (new \ApiClient\IO\Response())
                     ->setCode(200)
                     ->setJsonData(json_encode($dataFromServer));
             });
 
-        $taskManager = new \ApiClient\App\TaskManager();
+        $taskManager = new TaskManager();
         $taskManager
-            ->setEm($entityManager)
             ->setTaskRepository($taskRepository);
 
         $transferManager = new \ApiClient\App\TransferManager();
@@ -195,6 +175,20 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
             ->buildBody()
             ->transfer()
             ->afterRequest();
+
+        $i = 0;
+        foreach($tasksDb as $taskDb){
+            $taskExp = $expectedTasksDb[$i];
+            if($taskDb instanceof Task and $taskExp instanceof Task){
+                $this->assertEquals($taskExp->getAction(), $taskDb->getAction());
+                $this->assertEquals($taskExp->getParameters(), $taskDb->getParameters());
+                $this->assertEquals($taskExp->getCreditId(), $taskDb->getCreditId());
+                $this->assertEquals($taskExp->getStatus(), $taskDb->getStatus());
+                $this->assertEquals($taskExp->getAttempt(), $taskDb->getAttempt());
+                $this->assertEquals($taskExp->getDescription(), $taskDb->getDescription());
+            }
+            $i++;
+        }
 
         return true;
     }
@@ -246,6 +240,28 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 ],
             ]
 
+        ];
+    }
+
+    public function providerCreate()
+    {
+        return [
+            [
+                'TestAction',
+                [100, 101, 102, 103, 104],
+                [
+                    $action = (new Action())
+                        ->setName('TestAction')
+                        ->setParameters([100, 101, 102, 103, 104])
+                ],
+                [
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(100)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(101)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(102)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(104)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                ]
+            ],
         ];
     }
 }

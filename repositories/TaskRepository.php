@@ -99,6 +99,12 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Обновляет задачи
+     * @param array $tasks
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function updateTasks(array $tasks)
     {
         foreach($this->getOpenTasks() as $openTask){
