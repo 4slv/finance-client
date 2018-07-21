@@ -89,21 +89,27 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
      */
     public function setInWorkForTasks(array $tasks, bool $inWork)
     {
-        foreach($this->getOpenTasks() as $openTask){
-            if($openTask instanceof Task){
-                $openTask->setInWork($inWork);
-                $this->em->persist($openTask);
+        foreach($tasks as $task){
+            if($task instanceof Task){
+                $task->setInWork($inWork);
+                $this->em->persist($task);
             }
         }
 
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Обновляет задачи
+     * @param array $tasks
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function updateTasks(array $tasks)
     {
-        foreach($this->getOpenTasks() as $openTask){
-            if($openTask instanceof Task){
-                $this->em->persist($openTask);
+        foreach($tasks as $task){
+            if($task instanceof Task){
+                $this->em->persist($task);
             }
         }
 
