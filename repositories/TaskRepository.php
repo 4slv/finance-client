@@ -68,7 +68,7 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
      * @param Task $task
      * @return array
      */
-    public function getOpenLinkTasks(Task $task): array
+    public function getLinkTasks(Task $task): array
     {
         return $this->createQueryBuilder('task')
             ->where('task.inWork = :inWork')
@@ -86,17 +86,22 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
     /**
      * Устанавливает inWork для задач
      * @param array $tasks
+     * @param bool $inWork
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function setInWorkForTasks(array $tasks, bool $inWork)
     {
+        $em = $this->getEntityManager();
+
         foreach($tasks as $task){
             if($task instanceof Task){
                 $task->setInWork($inWork);
-                $this->em->persist($task);
+                $em->persist($task);
             }
         }
 
-        $this->getEntityManager()->flush();
+        $em->flush();
     }
 
     /**
@@ -107,12 +112,14 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
      */
     public function updateTasks(array $tasks)
     {
+        $em = $this->getEntityManager();
+
         foreach($tasks as $task){
             if($task instanceof Task){
-                $this->em->persist($task);
+                $em->persist($task);
             }
         }
 
-        $this->getEntityManager()->flush();
+        $em->flush();
     }
 }

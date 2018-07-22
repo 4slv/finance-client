@@ -11,8 +11,8 @@ use ApiClient\Model\Transfer;
 /** Менеджер отправки задач */
 class TransferManager
 {
-    /** @var TaskManager $taskManager */
-    private $taskManager;
+    /** @var OpenTaskManager $openTaskManager */
+    private $openTaskManager;
 
     /** @var Transfer $transfer */
     private $transfer;
@@ -24,20 +24,20 @@ class TransferManager
     private $response;
 
     /**
-     * @return TaskManager
+     * @return OpenTaskManager
      */
-    public function getTaskManager(): TaskManager
+    public function getOpenTaskManager(): OpenTaskManager
     {
-        return $this->taskManager;
+        return $this->openTaskManager;
     }
 
     /**
-     * @param TaskManager $taskManager
+     * @param OpenTaskManager $openTaskManager
      * @return TransferManager
      */
-    public function setTaskManager(TaskManager $taskManager): TransferManager
+    public function setOpenTaskManager(OpenTaskManager $openTaskManager): TransferManager
     {
-        $this->taskManager = $taskManager;
+        $this->openTaskManager = $openTaskManager;
         return $this;
     }
 
@@ -104,7 +104,7 @@ class TransferManager
     public function buildBody(): TransferManager
     {
         $tasksParameters = [];
-        foreach($this->getTaskManager()->getOpenTasks() as $task){
+        foreach($this->getOpenTaskManager()->getTasks() as $task){
             if($task instanceof Task){
                 array_push($tasksParameters, [
                     'taskId' => $task->getId(),
@@ -115,7 +115,7 @@ class TransferManager
 
         $body = [
             'apiKey' => '0000', //todo
-            'action' => $this->getTaskManager()->getFirstOpenAction()->getName(),
+            'action' => $this->getOpenTaskManager()->getAction()->getName(),
             'tasks' => $tasksParameters
         ];
 
@@ -141,7 +141,7 @@ class TransferManager
     }
 
     /**
-     * Действия после полечения ответа
+     * Действия после выполнения запроса
      * @throws ApiClientException
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -150,11 +150,14 @@ class TransferManager
     {
         $data = $this->getResponse()->getData();
         $this->getTransfer()->setCode($this->getResponse()->getCode());
+        $this->getOpenTaskManager()->setTransfer($this->getTransfer());
 
         if(is_null($data) or $this->getResponse()->getCode() !== 200){
-            $this->getTaskManager()->updateStatusForAllOpenTasks(Status::ERROR, $this->getTransfer());
+            $this->getOpenTaskManager()->updateStatus(Status::ERROR);
         } else{
-            $this->getTaskManager()->updateTasks($data, $this->getTransfer());
+            $this->getOpenTaskManager()->updateTasks($data);
         }
+
+        $this->getOpenTaskManager()->save();
     }
 }

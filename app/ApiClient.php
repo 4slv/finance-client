@@ -3,6 +3,7 @@
 namespace ApiClient\App;
 
 use ApiClient\Action\ActionResolver;
+use ApiClient\Config\LocalEntityManager;
 use ApiClient\IO\Request;
 use ApiClient\Model\Action;
 use ApiClient\Model\Task;
@@ -27,12 +28,10 @@ class ApiClient
         $actionModel->setName($actionName);
         $actionModel->setParameters($inputParameters);
 
-        $entityManager = LocalEntityManager::getEntityManager();
-        $taskRepository = $entityManager->getRepository(Task::class);
+        $taskRepository = LocalEntityManager::getEntityManager()->getRepository(Task::class);
 
         $taskManager = new TaskManager();
         $taskManager
-            ->setEm($entityManager)
             ->setTaskRepository($taskRepository);
 
         $actionResolver = new ActionResolver();
@@ -58,12 +57,11 @@ class ApiClient
         $entityManager = LocalEntityManager::getEntityManager();
         $taskRepository = $entityManager->getRepository(Task::class);
 
-        $taskManager = new TaskManager();
-        $taskManager
-            ->setEm($entityManager)
+        $openTaskManager = new OpenTaskManager();
+        $openTaskManager
             ->setTaskRepository($taskRepository);
 
-        if(is_null($taskManager->getOpenTasks()))
+        if(is_null($openTaskManager->getTasks()))
             return null;
 
         $transferManager = new TransferManager();
@@ -71,7 +69,7 @@ class ApiClient
         $request = new Request();
 
         $transferManager
-            ->setTaskManager($taskManager)
+            ->setOpenTaskManager($openTaskManager)
             ->setTransfer($transfer)
             ->setRequest($request)
             ->buildBody()

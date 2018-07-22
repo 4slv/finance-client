@@ -1,22 +1,25 @@
 <?php
 
+use ApiClient\App\ApiClientException;
+use ApiClient\App\OpenTaskManager;
 use ApiClient\App\TaskManager;
+use ApiClient\IO\Request;
 use ApiClient\Model\Task;
 use ApiClient\App\Status;
 use ApiClient\Model\Action;
+use ApiClient\Repository\TaskRepository;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 
 class CreateTasksTest extends PHPUnit\Framework\TestCase
 {
-
     /**
      * @dataProvider providerCreate()
      * @param $actionName
      * @param $actionParameters
      * @param $expectedActionDb
      * @param $expectedTasksDb
-     * @throws \ApiClient\App\ApiClientException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ApiClientException
      */
     public function testCreateTasks($actionName, $actionParameters, $expectedActionDb, $expectedTasksDb)
     {
@@ -70,21 +73,21 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
     /**
      * @dataProvider providerTransfer
      * @param $action
-     * @param $dataFromServer
      * @param $tasksDb
-     * @param $expectedDbTasks
+     * @param $expectedTasksDb
+     * @param $dataFromServer
      * @return bool|null
-     * @throws \ApiClient\App\ApiClientException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ApiClientException
+     * @throws OptimisticLockException
+     * @throws ORMException
      */
     public function testTransfer($action, $tasksDb, $expectedTasksDb, $dataFromServer)
     {
         $limit = 6;
 
-        $taskRepository = $this->getMockBuilder(\ApiClient\Repository\TaskRepository::class)
+        $taskRepository = $this->getMockBuilder(TaskRepository::class)
             ->disableOriginalConstructor()
-            ->setMethods(array('getOpenTasks', 'getFirstOpenAction', 'setInWorkForTasks', 'getOpenLinkTasks', 'find', 'updateTasks'))
+            ->setMethods(array('getOpenTasks', 'getFirstOpenAction', 'setInWorkForTasks', 'getLinkTasks', 'find', 'updateTasks'))
             ->getMock();
 
         $taskRepository->expects($this->any())->method('getOpenTasks')
@@ -113,7 +116,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 }
             });
 
-        $taskRepository->expects($this->any())->method('getOpenLinkTasks')
+        $taskRepository->expects($this->any())->method('getLinkTasks')
             ->willReturnCallback(function ($task) use ($tasksDb){
                 $openLinkTasks = [];
                 foreach($tasksDb as $dbTask){
@@ -150,7 +153,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 }
             });
 
-        $request = $this->getMockBuilder(\ApiClient\IO\Request::class)
+        $request = $this->getMockBuilder(Request::class)
             ->setMethods(array('send'))
             ->getMock();
 
@@ -161,15 +164,15 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                     ->setJsonData(json_encode($dataFromServer));
             });
 
-        $taskManager = new TaskManager();
-        $taskManager
+        $openTaskManager = new OpenTaskManager();
+        $openTaskManager
             ->setTaskRepository($taskRepository);
 
         $transferManager = new \ApiClient\App\TransferManager();
         $transfer = new \ApiClient\Model\Transfer();
 
         $transferManager
-            ->setTaskManager($taskManager)
+            ->setOpenTaskManager($openTaskManager)
             ->setTransfer($transfer)
             ->setRequest($request)
             ->buildBody()
