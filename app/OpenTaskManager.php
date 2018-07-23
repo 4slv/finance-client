@@ -5,6 +5,7 @@ namespace ApiClient\App;
 use ApiClient\Model\Task;
 use ApiClient\Model\Action;
 use ApiClient\Model\Transfer;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 
 /** Управление открытыми задачами */
@@ -35,7 +36,7 @@ class OpenTaskManager extends TaskManager
      * Получает все открытые задачи в рамках одного действия
      * @return array|null
      * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function getTasks(): ?array
     {
@@ -56,7 +57,7 @@ class OpenTaskManager extends TaskManager
     /**
      * Для открытых задач в очереди: устанавливает inWork = true
      * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      * @return OpenTaskManager
      */
     private function openTasks(): OpenTaskManager
@@ -73,12 +74,14 @@ class OpenTaskManager extends TaskManager
      * @param string $status
      * @return OpenTaskManager
      * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function updateStatus(string $status): OpenTaskManager
     {
         foreach($this->getTasks() as &$task){
-            $this->setStatus($task, $status);
+            $task = $this->setStatus($task, $status);
+            $task->setAttempt($task->getAttempt() + 1);
+            $task->setInWork(false);
         }
 
         return $this;
@@ -89,46 +92,29 @@ class OpenTaskManager extends TaskManager
      * @param array $tasksData
      * @param string|null $status если указан, то установится для всех открытых задач в очереди
      * @return OpenTaskManager
-     * @throws ApiClientException
      * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function updateTasks(array $tasksData, string $status = null): OpenTaskManager
     {
-        foreach($tasksData as $taskData){
+        foreach($this->getTasks() as &$task){
+            foreach($tasksData as $taskData){
+                if($task instanceof Task and
+                    $task->getId() == $taskData->taskId){
 
-            $task = $this->getTaskFromData($taskData->taskId);
+                    if(!is_null($status)){
+                        $taskData->status = (new Status($status))->getValue();
+                    }
 
-            if(!is_null($status)){
-                $taskData->status = (new Status($status))->getValue();
+                    $task = $this->setStatus($task, $taskData->status);
+                    $task->setDescription(strlen($taskData->description) > 0 ? $taskData->description : null);
+                    $task->setAttempt($task->getAttempt() + 1);
+                    $task->setInWork(false);
+                }
             }
-
-            $task = $this->setStatus($task, $taskData->status);
-            $task->setDescription($taskData->description ?? null);
-            $task->setAttempt($task->getAttempt() + 1);
-            $task->setInWork(false);
         }
 
         return $this;
-    }
-
-    /**
-     * Поиск открытой задачи по id
-     * @param int $taskId
-     * @return Task
-     * @throws ApiClientException
-     * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function getTaskFromData(int $taskId): Task
-    {
-        foreach ($this->getTasks() as $task){
-            if($task->getId() == $taskId){
-                return $task;
-            }
-        }
-
-        throw new ApiClientException("Открытая задача #%d не найдена", $taskId);
     }
 
     /**
@@ -164,7 +150,7 @@ class OpenTaskManager extends TaskManager
     }
 
     /**
-     * Устанавливает статус для всех связанных задач
+     * Устанавливает статус для связанных задач
      * @param Task $task
      * @param string $status
      * @throws ORMException
@@ -185,10 +171,11 @@ class OpenTaskManager extends TaskManager
     }
 
     /**
+     * Устанавливает передачу для открытых задач
      * @param Transfer $transfer
      * @return OpenTaskManager
      * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function setTransfer(Transfer $transfer): OpenTaskManager
     {

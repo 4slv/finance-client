@@ -37,7 +37,7 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
     }
 
     /**
-     * Получает первые N открытых задач
+     * Получает первые N открытых задач в рамках одного действия
      * @param Action $action
      * @return array
      */

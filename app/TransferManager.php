@@ -7,6 +7,8 @@ use ApiClient\IO\Request;
 use ApiClient\IO\Response;
 use ApiClient\Model\Task;
 use ApiClient\Model\Transfer;
+use ApiClient\Repository\TransferRepository;
+use Doctrine\ORM\EntityRepository;
 
 /** Менеджер отправки задач */
 class TransferManager
@@ -22,6 +24,9 @@ class TransferManager
 
     /** @var Response $response */
     private $response;
+
+    /** @var TransferRepository $transferRepository */
+    private $transferRepository;
 
     /**
      * @return OpenTaskManager
@@ -96,6 +101,24 @@ class TransferManager
     }
 
     /**
+     * @return TransferRepository
+     */
+    public function getTransferRepository(): TransferRepository
+    {
+        return $this->transferRepository;
+    }
+
+    /**
+     * @param TransferRepository $transferRepository
+     * @return TransferManager
+     */
+    public function setTransferRepository(TransferRepository $transferRepository)
+    {
+        $this->transferRepository = $transferRepository;
+        return $this;
+    }
+
+    /**
      * Преобразовывает параметры задач из очереди в массив для отправки
      * @return TransferManager
      * @throws \Doctrine\ORM\ORMException
@@ -142,7 +165,6 @@ class TransferManager
 
     /**
      * Действия после выполнения запроса
-     * @throws ApiClientException
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
@@ -150,6 +172,7 @@ class TransferManager
     {
         $data = $this->getResponse()->getData();
         $this->getTransfer()->setCode($this->getResponse()->getCode());
+        $this->getTransferRepository()->save($this->getTransfer());
         $this->getOpenTaskManager()->setTransfer($this->getTransfer());
 
         if(is_null($data) or $this->getResponse()->getCode() !== 200){

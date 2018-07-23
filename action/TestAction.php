@@ -2,19 +2,12 @@
 
 namespace ApiClient\Action;
 
-use ApiClient\App\ApiClientException;
 use ApiClient\Model\Task;
 
 class TestAction extends ActionAbstract
 {
-    /**
-     * @return void
-     * @throws ApiClientException
-     */
-    public function generateTasks(): void
+    public function generateTasks()
     {
-        parent::generateTasks();
-
         foreach($this->getActionModel()->getParameters() as $parameter){
             $task = new Task();
             $task->setCreditId($parameter);

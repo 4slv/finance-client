@@ -2,6 +2,8 @@
 
 namespace ApiClient\Action;
 
+use ApiClient\App\ApiClientException;
+
 final class ActionResolver
 {
     /**
@@ -14,7 +16,7 @@ final class ActionResolver
 
         switch($actionName){
             case 'TestAction': $action = $factoryAction->getTestAction(); break;
-            default: return null;
+            default: throw new ApiClientException(sprintf("Действие '%s' не сконфигурировано", $actionName));
         }
 
         return $action;

@@ -78,8 +78,8 @@ class ApiClientInitTable extends AbstractMigration
             ->addColumn(
                 'status',
                 'enum',
-                ['values' => ['open', 'close', 'error', 'reject', 'block']],
-                ['comment' => 'Статусы выполнения задачи']
+                ['values' => ['open', 'close', 'error', 'reject', 'block'],
+                    'comment' => 'Статусы выполнения задачи']
             )
             ->addColumn(
                 'attempt',

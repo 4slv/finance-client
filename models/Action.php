@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\Entity;
  * Action
  *
  * @Table(name="ApiClientAction")
- * @Entity
+ * @Entity(repositoryClass="ApiClient\Repository\ActionRepository")
  */
 class Action
 {

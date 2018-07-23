@@ -1,13 +1,18 @@
 <?php
 
+use ApiClient\Action\ActionResolver;
 use ApiClient\App\ApiClientException;
 use ApiClient\App\OpenTaskManager;
 use ApiClient\App\TaskManager;
+use ApiClient\App\TransferManager;
 use ApiClient\IO\Request;
+use ApiClient\IO\Response;
 use ApiClient\Model\Task;
 use ApiClient\App\Status;
 use ApiClient\Model\Action;
+use ApiClient\Model\Transfer;
 use ApiClient\Repository\TaskRepository;
+use ApiClient\Repository\TransferRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 
@@ -42,7 +47,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                 }
             });
 
-        $actionResolver = new \ApiClient\Action\ActionResolver();
+        $actionResolver = new ActionResolver();
         $action = $actionResolver->resolve($actionName);
         $action
             ->setActionModel($actionModel)
@@ -159,19 +164,25 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
 
         $request->expects($this->any())->method('send')
             ->willReturnCallback(function () use ($dataFromServer){
-                return (new \ApiClient\IO\Response())
+                return (new Response())
                     ->setCode(200)
                     ->setJsonData(json_encode($dataFromServer));
             });
+
+        $transferRepository = $this->getMockBuilder(TransferRepository::class)
+            ->disableOriginalConstructor()
+            ->setMethods(array('save'))
+            ->getMock();
 
         $openTaskManager = new OpenTaskManager();
         $openTaskManager
             ->setTaskRepository($taskRepository);
 
-        $transferManager = new \ApiClient\App\TransferManager();
-        $transfer = new \ApiClient\Model\Transfer();
+        $transferManager = new TransferManager();
+        $transfer = new Transfer();
 
         $transferManager
+            ->setTransferRepository($transferRepository)
             ->setOpenTaskManager($openTaskManager)
             ->setTransfer($transfer)
             ->setRequest($request)

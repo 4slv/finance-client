@@ -8,8 +8,6 @@ use ApiClient\IO\Request;
 use ApiClient\Model\Action;
 use ApiClient\Model\Task;
 use ApiClient\Model\Transfer;
-use Doctrine\ORM\EntityManager;
-use Framework\Database\CEntityManager;
 
 /** Класс усправление модулем */
 class ApiClient
@@ -28,7 +26,9 @@ class ApiClient
         $actionModel->setName($actionName);
         $actionModel->setParameters($inputParameters);
 
-        $taskRepository = LocalEntityManager::getEntityManager()->getRepository(Task::class);
+        $em = LocalEntityManager::getEntityManager();
+        $taskRepository = $em->getRepository(Task::class);
+        $actionRepository = $em->getRepository(Action::class);
 
         $taskManager = new TaskManager();
         $taskManager
@@ -37,8 +37,10 @@ class ApiClient
         $actionResolver = new ActionResolver();
         $action = $actionResolver->resolve($actionName);
         $action
+            ->setActionRepository($actionRepository)
             ->setActionModel($actionModel)
             ->setTaskManager($taskManager)
+            ->saveAction()
             ->generateTasks();
 
         $taskManager->save();
@@ -54,8 +56,9 @@ class ApiClient
      */
     public function transfer()
     {
-        $entityManager = LocalEntityManager::getEntityManager();
-        $taskRepository = $entityManager->getRepository(Task::class);
+        $em = LocalEntityManager::getEntityManager();
+        $taskRepository = $em->getRepository(Task::class);
+        $transferRepository = $em->getRepository(Transfer::class);
 
         $openTaskManager = new OpenTaskManager();
         $openTaskManager
@@ -67,8 +70,9 @@ class ApiClient
         $transferManager = new TransferManager();
         $transfer = new Transfer();
         $request = new Request();
-
+        
         $transferManager
+            ->setTransferRepository($transferRepository)
             ->setOpenTaskManager($openTaskManager)
             ->setTransfer($transfer)
             ->setRequest($request)

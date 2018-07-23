@@ -16,7 +16,7 @@ use Doctrine\ORM\Mapping\JoinTable;
  * Transfer
  *
  * @Table(name="ApiClientTransfer")
- * @Entity
+ * @Entity(repositoryClass="ApiClient\Repository\TransferRepository")
  */
 class Transfer
 {
