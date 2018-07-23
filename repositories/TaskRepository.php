@@ -73,11 +73,13 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
         return $this->createQueryBuilder('task')
             ->where('task.inWork = :inWork')
             ->andWhere('task.status in (:status)')
-            ->andWhere('task.creditId = :creditId')
+            ->andWhere('task.productId = :productId')
+            ->andWhere('task.createDatetime >= :createDatetime')
             ->setParameters([
                 'inWork' => false,
                 'status' => [Status::OPEN, Status::BLOCK],
-                'creditId' => $task->getCreditId()
+                'productId' => $task->getProductId(),
+                'createDatetime' => $task->getCreateDatetime()
             ])
             ->getQuery()
             ->getResult();

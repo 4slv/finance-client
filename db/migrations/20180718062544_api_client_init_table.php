@@ -71,14 +71,14 @@ class ApiClientInitTable extends AbstractMigration
                 ['comment' => 'Параметры задачи в формате JSON']
             )
             ->addColumn(
-                'creditId',
+                'productId',
                 'integer',
-                ['comment' => 'Идентификатор кредита']
+                ['comment' => 'Идентификатор продукта']
             )
             ->addColumn(
                 'status',
                 'enum',
-                ['values' => ['open', 'close', 'error', 'reject', 'block'],
+                ['values' => ['open', 'close', 'error', 'reject', 'block', 'cancel'],
                     'comment' => 'Статусы выполнения задачи']
             )
             ->addColumn(

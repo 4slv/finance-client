@@ -64,7 +64,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
             if($taskDb instanceof Task and $taskExp instanceof Task){
                 $this->assertEquals($taskExp->getAction(), $taskDb->getAction());
                 $this->assertEquals($taskExp->getParameters(), $taskDb->getParameters());
-                $this->assertEquals($taskExp->getCreditId(), $taskDb->getCreditId());
+                $this->assertEquals($taskExp->getProductId(), $taskDb->getProductId());
                 $this->assertEquals($taskExp->getStatus(), $taskDb->getStatus());
                 $this->assertEquals($taskExp->getAttempt(), $taskDb->getAttempt());
                 $this->assertEquals($taskExp->getInWork(), $taskDb->getInWork());
@@ -89,6 +89,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
     public function testTransfer($action, $tasksDb, $expectedTasksDb, $dataFromServer)
     {
         $limit = 6;
+        $attemptLimit = 5;
 
         $taskRepository = $this->getMockBuilder(TaskRepository::class)
             ->disableOriginalConstructor()
@@ -117,7 +118,9 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
         $taskRepository->expects($this->any())->method('setInWorkForTasks')
             ->willReturnCallback(function () use (&$tasksDb){
                 foreach($tasksDb as &$task){
-                    $task->setInWork(true);
+                    if($task instanceof Task){
+                        $task->setInWork(true);
+                    }
                 }
             });
 
@@ -125,8 +128,10 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
             ->willReturnCallback(function ($task) use ($tasksDb){
                 $openLinkTasks = [];
                 foreach($tasksDb as $dbTask){
-                    if($task->getId() != $dbTask->getId() and
-                        $task->getCreditId() == $dbTask->getCreditId() and
+                    if($task instanceof Task and
+                        $dbTask instanceof Task and
+                        $task->getId() != $dbTask->getId() and
+                        $task->getProductId() == $dbTask->getProductId() and
                         ($dbTask->getStatus() == Status::OPEN or
                             $dbTask->getStatus() == Status::BLOCK)
                     ){
@@ -196,7 +201,7 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
             if($taskDb instanceof Task and $taskExp instanceof Task){
                 $this->assertEquals($taskExp->getAction(), $taskDb->getAction());
                 $this->assertEquals($taskExp->getParameters(), $taskDb->getParameters());
-                $this->assertEquals($taskExp->getCreditId(), $taskDb->getCreditId());
+                $this->assertEquals($taskExp->getProductId(), $taskDb->getProductId());
                 $this->assertEquals($taskExp->getStatus(), $taskDb->getStatus());
                 $this->assertEquals($taskExp->getAttempt(), $taskDb->getAttempt());
                 $this->assertEquals($taskExp->getDescription(), $taskDb->getDescription());
@@ -215,34 +220,34 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                     ->setName('TestAction')
                     ->setParameters([]),
                 [
-                    (new Task())->setId(1)->setAction($action)->setCreditId(100)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(2)->setAction($action)->setCreditId(101)->setStatus(Status::CLOSE)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(3)->setAction($action)->setCreditId(102)->setStatus(Status::ERROR)->setAttempt(2)->setDescription('error message'),
-                    (new Task())->setId(4)->setAction($action)->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(5)->setAction($action)->setCreditId(104)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
-                    (new Task())->setId(6)->setAction($action)->setCreditId(105)->setStatus(Status::ERROR)->setAttempt(1)->setDescription('error message'),
-                    (new Task())->setId(7)->setAction($action)->setCreditId(106)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(8)->setAction($action)->setCreditId(107)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(9)->setAction($action)->setCreditId(108)->setStatus(Status::ERROR)->setAttempt(0)->setDescription('error message'),
-                    (new Task())->setId(10)->setAction(new Action())->setCreditId(102)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(11)->setAction(new Action())->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(12)->setAction(new Action())->setCreditId(107)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(13)->setAction(new Action())->setCreditId(108)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(1)->setAction($action)->setProductId(100)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(2)->setAction($action)->setProductId(101)->setStatus(Status::CLOSE)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(3)->setAction($action)->setProductId(102)->setStatus(Status::ERROR)->setAttempt(2)->setDescription('error message'),
+                    (new Task())->setId(4)->setAction($action)->setProductId(103)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(5)->setAction($action)->setProductId(104)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
+                    (new Task())->setId(6)->setAction($action)->setProductId(105)->setStatus(Status::ERROR)->setAttempt(4)->setDescription('error message'),
+                    (new Task())->setId(7)->setAction($action)->setProductId(106)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(8)->setAction($action)->setProductId(107)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(9)->setAction($action)->setProductId(108)->setStatus(Status::ERROR)->setAttempt(0)->setDescription('error message'),
+                    (new Task())->setId(10)->setAction(new Action())->setProductId(102)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(11)->setAction(new Action())->setProductId(103)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(12)->setAction(new Action())->setProductId(107)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(13)->setAction(new Action())->setProductId(108)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
                 ],
                 [
-                    (new Task())->setId(1)->setAction($action)->setCreditId(100)->setStatus(Status::CLOSE)->setAttempt(1)->setDescription(''),
-                    (new Task())->setId(2)->setAction($action)->setCreditId(101)->setStatus(Status::CLOSE)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(3)->setAction($action)->setCreditId(102)->setStatus(Status::CLOSE)->setAttempt(3)->setDescription(''),
-                    (new Task())->setId(4)->setAction($action)->setCreditId(103)->setStatus(Status::ERROR)->setAttempt(1)->setDescription('error message'),
-                    (new Task())->setId(5)->setAction($action)->setCreditId(104)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
-                    (new Task())->setId(6)->setAction($action)->setCreditId(105)->setStatus(Status::ERROR)->setAttempt(2)->setDescription('error message'),
-                    (new Task())->setId(7)->setAction($action)->setCreditId(106)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(8)->setAction($action)->setCreditId(107)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
-                    (new Task())->setId(9)->setAction($action)->setCreditId(108)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
-                    (new Task())->setId(10)->setAction(new Action())->setCreditId(102)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(11)->setAction(new Action())->setCreditId(103)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(12)->setAction(new Action())->setCreditId(107)->setStatus(Status::REJECT)->setAttempt(0)->setDescription(''),
-                    (new Task())->setId(13)->setAction(new Action())->setCreditId(108)->setStatus(Status::REJECT)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(1)->setAction($action)->setProductId(100)->setStatus(Status::CLOSE)->setAttempt(1)->setDescription(''),
+                    (new Task())->setId(2)->setAction($action)->setProductId(101)->setStatus(Status::CLOSE)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(3)->setAction($action)->setProductId(102)->setStatus(Status::CLOSE)->setAttempt(3)->setDescription(''),
+                    (new Task())->setId(4)->setAction($action)->setProductId(103)->setStatus(Status::ERROR)->setAttempt(1)->setDescription('error message'),
+                    (new Task())->setId(5)->setAction($action)->setProductId(104)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
+                    (new Task())->setId(6)->setAction($action)->setProductId(105)->setStatus(Status::CANCEL)->setAttempt(5)->setDescription('error message'),
+                    (new Task())->setId(7)->setAction($action)->setProductId(106)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(8)->setAction($action)->setProductId(107)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
+                    (new Task())->setId(9)->setAction($action)->setProductId(108)->setStatus(Status::REJECT)->setAttempt(1)->setDescription(''),
+                    (new Task())->setId(10)->setAction(new Action())->setProductId(102)->setStatus(Status::OPEN)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(11)->setAction(new Action())->setProductId(103)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(12)->setAction(new Action())->setProductId(107)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
+                    (new Task())->setId(13)->setAction(new Action())->setProductId(108)->setStatus(Status::BLOCK)->setAttempt(0)->setDescription(''),
                 ],
                 [
                     ['taskId' => 1, 'status' => 'success', 'description' => ''],
@@ -269,11 +274,11 @@ class CreateTasksTest extends PHPUnit\Framework\TestCase
                         ->setParameters([100, 101, 102, 103, 104])
                 ],
                 [
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(100)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(101)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(102)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(103)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
-                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setCreditId(104)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setProductId(100)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setProductId(101)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setProductId(102)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setProductId(103)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
+                    (new Task())->setAction($action)->setParameters(['param1' => 'value1'])->setProductId(104)->setStatus(Status::OPEN)->setAttempt(0)->setInWork(0)->setDescription(''),
                 ]
             ],
         ];

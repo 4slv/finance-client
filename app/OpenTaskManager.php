@@ -2,6 +2,7 @@
 
 namespace ApiClient\App;
 
+use ApiClient\Config\Config;
 use ApiClient\Model\Task;
 use ApiClient\Model\Action;
 use ApiClient\Model\Transfer;
@@ -79,6 +80,11 @@ class OpenTaskManager extends TaskManager
     public function updateStatus(string $status): OpenTaskManager
     {
         foreach($this->getTasks() as &$task){
+
+            if($task->getAttempt() + 1 == Config::get('attemptLimit')){
+                $status = Status::CANCEL;
+            }
+
             $task = $this->setStatus($task, $status);
             $task->setAttempt($task->getAttempt() + 1);
             $task->setInWork(false);
@@ -90,23 +96,24 @@ class OpenTaskManager extends TaskManager
     /**
      * Обновляет открытые задачи
      * @param array $tasksData
-     * @param string|null $status если указан, то установится для всех открытых задач в очереди
      * @return OpenTaskManager
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function updateTasks(array $tasksData, string $status = null): OpenTaskManager
+    public function updateTasks(array $tasksData): OpenTaskManager
     {
         foreach($this->getTasks() as &$task){
             foreach($tasksData as $taskData){
                 if($task instanceof Task and
                     $task->getId() == $taskData->taskId){
 
-                    if(!is_null($status)){
-                        $taskData->status = (new Status($status))->getValue();
+                    $status = $taskData->status;
+
+                    if($task->getAttempt() + 1 == Config::get('attemptLimit')){
+                        $status = Status::CANCEL;
                     }
 
-                    $task = $this->setStatus($task, $taskData->status);
+                    $task = $this->setStatus($task, $status);
                     $task->setDescription(strlen($taskData->description) > 0 ? $taskData->description : null);
                     $task->setAttempt($task->getAttempt() + 1);
                     $task->setInWork(false);
@@ -135,14 +142,10 @@ class OpenTaskManager extends TaskManager
                 $task->setStatus(Status::CLOSE);
                 break;
             case Status::ERROR:
-                if ($task->getStatus() == Status::OPEN) {
-                    $task->setStatus(Status::ERROR);
-                    $this->updateStatusForLinkTasks($task, Status::BLOCK);
-                }
-                break;
             case Status::REJECT:
-                $task->setStatus(Status::REJECT);
-                $this->updateStatusForLinkTasks($task, Status::REJECT);
+            case Status::CANCEL:
+                $task->setStatus($status);
+                $this->updateStatusForLinkTasks($task, Status::BLOCK);
                 break;
         }
 

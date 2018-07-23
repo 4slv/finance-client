@@ -45,9 +45,9 @@ class Task
     /**
      * @var integer
      *
-     * @Column(name="creditId", type="integer", nullable=false, options={"comment"="Идентификатор кредита"})
+     * @Column(name="productId", type="integer", nullable=false, options={"comment"="Идентификатор кредита"})
      */
-    private $creditId;
+    private $productId;
 
     /**
      * @var DateTime
@@ -114,8 +114,8 @@ class Task
 
     /**
      * Set id.
-     *
-     * @return int
+     * @param int $id
+     * @return Task
      */
     public function setId(int $id): Task
     {
@@ -159,27 +159,27 @@ class Task
     }
 
     /**
-     * Set creditId.
+     * Set productId.
      *
-     * @param int $creditId
+     * @param int $productId
      *
      * @return Task
      */
-    public function setCreditId($creditId)
+    public function setProductId($productId)
     {
-        $this->creditId = $creditId;
+        $this->productId = $productId;
 
         return $this;
     }
 
     /**
-     * Get creditId.
+     * Get productId.
      *
      * @return int
      */
-    public function getCreditId()
+    public function getProductId()
     {
-        return $this->creditId;
+        return $this->productId;
     }
 
     /**

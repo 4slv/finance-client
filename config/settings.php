@@ -2,21 +2,23 @@
 
 return [
     //максимальное количество задач для одной отправки (0 - без ограничений)
-    'taskLimit' => 5,
+    'taskLimit' => 1000,
+
+    //максимальное количество попыток отправки задачи, после превышения ставится cancel
+    'attemptLimit' => 10,
 
     //url адрес отправления запросов
-    'url' => 'http://192.168.74.37/apitmp',
+    'url' => 'http://192.168.74.3/apitmp',
 
     //максимальное время ожидания ответа сервера
-    'timeout' => 10,
+    'timeout' => 5,
 
     //полный путь до класса EntityManager
     'CEntityManagerPath' => 'Framework\Database\CEntityManager',
 
+    //неймспейс до классов-действий
+    'actionClassNamespace' => 'ApiClient\Action',
+
     //ключи для доступа к api
-    'apiKey' => [
-        'ChSlovoRu' => 'd4f2192cf3577c02c9a7de61a4d8d9e5',
-        'ChSlovoKz' => '1b1670cb15ce66067c7db7c414c9dc61',
-        'ChSlovoGe' => '61aa39ea0d82be10b0a776880f30d267'
-    ],
+    'apiKey' => 'd4f2192cf3577c02c9a7de61a4d8d9e5',
 ];

@@ -2,7 +2,6 @@
 
 namespace ApiClient\Action;
 
-use ApiClient\App\ApiClientException;
 use ApiClient\Model\Action;
 use ApiClient\App\TaskManager;
 use ApiClient\Repository\ActionRepository;

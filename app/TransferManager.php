@@ -137,7 +137,7 @@ class TransferManager
         }
 
         $body = [
-            'apiKey' => '0000', //todo
+            'apiKey' => Config::get('apiKey'),
             'action' => $this->getOpenTaskManager()->getAction()->getName(),
             'tasks' => $tasksParameters
         ];

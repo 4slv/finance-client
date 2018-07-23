@@ -10,7 +10,7 @@ class TestAction extends ActionAbstract
     {
         foreach($this->getActionModel()->getParameters() as $parameter){
             $task = new Task();
-            $task->setCreditId($parameter);
+            $task->setProductId($parameter);
             $task->setParameters(['param1' => 'value1']);
             $task->setAction($this->getActionModel());
             $this->getTaskManager()->addTask($task);
